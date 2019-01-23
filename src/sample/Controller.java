@@ -28,6 +28,7 @@ public class Controller {
         if (file != null) {
             Workbook workbook = ExeclUtil.InputExcel(file);
             ExeclUtil.hanleExcel(workbook);
+            ExeclUtil.OutputExcel(workbook, file.getName());
         }
     }
 

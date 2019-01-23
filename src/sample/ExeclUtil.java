@@ -20,26 +20,44 @@ public class ExeclUtil {
         String fileType = fileName.substring(fileName.lastIndexOf("."));
         try {
             if (".xls".equals(fileType)) {
-                //workBook = new XSSFWorkbook(inputStream);
+                workBook = new XSSFWorkbook(inputStream);
             }else if (".xlsx".equals(fileType)){
                 workBook = new XSSFWorkbook(inputStream);
             }
         }catch (IOException e) {
             e.printStackTrace();
+        }finally {
+            try {
+                inputStream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
         return workBook;
     }
 
-    public static void OutputExcel(File file) {
+    public static void OutputExcel(Workbook workbook, String fileName) {
         FileOutputStream fileOutputStream = null;
         try {
-            fileOutputStream = new FileOutputStream(file);
-        } catch (FileNotFoundException e) {
+            fileOutputStream = new FileOutputStream("D:/" + fileName);
+            workbook.write(fileOutputStream);
+            fileOutputStream.flush();
+
+        } catch (Exception e) {
             e.printStackTrace();
+        }finally {
+            try {
+                fileOutputStream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
     public static void hanleExcel(Workbook workbook) {
+        CellStyle xssfCellStyle = workbook.createCellStyle();
+        xssfCellStyle.setFillForegroundColor(IndexedColors.RED.getIndex());
+        xssfCellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
         String firstName = null;
         String SecondName = null;
         Integer sheetNumber = workbook.getNumberOfSheets();
@@ -55,10 +73,13 @@ public class ExeclUtil {
                         Integer cellNum = row.getPhysicalNumberOfCells();
                         for (int k = 1; k <= cellNum; k++) {
                             String cellName = CellReference.convertNumToColString(k - 1);
-                            if ("北京".equals(cellName)) {
+                            if ("A".equals(cellName)) {
                                 Cell cell = row.getCell(k - 1);
                                 cell.setCellType(CellType.STRING);
-                                System.out.println(cell.getStringCellValue());
+                                if ("北京".equals(cell.getStringCellValue())) {
+                                    cell.setCellStyle(xssfCellStyle);
+                                }
+
                             }
                         }
 
