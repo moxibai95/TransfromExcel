@@ -1,5 +1,6 @@
 package sample;
 
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.hssf.util.CellReference;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -20,7 +21,7 @@ public class ExeclUtil {
         String fileType = fileName.substring(fileName.lastIndexOf("."));
         try {
             if (".xls".equals(fileType)) {
-                workBook = new XSSFWorkbook(inputStream);
+                workBook = new HSSFWorkbook(inputStream);
             }else if (".xlsx".equals(fileType)){
                 workBook = new XSSFWorkbook(inputStream);
             }
