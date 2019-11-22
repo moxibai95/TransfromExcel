@@ -1,12 +1,22 @@
-package sample;
+package sample.util;
 
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.hssf.util.CellReference;
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+import org.apache.poi.openxml4j.opc.OPCPackage;
+import org.apache.poi.openxml4j.opc.PackageAccess;
+import org.apache.poi.poifs.crypt.EncryptionInfo;
+import org.apache.poi.poifs.crypt.EncryptionMode;
+import org.apache.poi.poifs.crypt.Encryptor;
+import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 
 import java.io.*;
+import java.security.GeneralSecurityException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class ExeclUtil {
     public static Workbook InputExcel(File file) {
@@ -53,6 +63,54 @@ public class ExeclUtil {
                 e.printStackTrace();
             }
         }
+    }
+
+    public static File hanle(Workbook workbook, Integer begin, Integer last) {
+        File file = new File("工作表表头.xlsx");
+        Sheet sheet = workbook.getSheetAt(0);
+        //获取该sheet下最大的行数
+        int rowNum = sheet.getLastRowNum();
+        for (int j = 1; j <= rowNum; j++) {
+            if (j < begin) {
+                sheet.removeRow(sheet.getRow(j));
+            }
+            if (j > last) {
+                sheet.removeRow(sheet.getRow(j));
+            }
+        }
+        if (begin != 1) {
+            sheet.shiftRows(begin, last, 1 - begin);
+        }
+        FileOutputStream os = null;
+        try {
+            os = new FileOutputStream(file);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        try {
+            workbook.write(os);
+            workbook.close();
+            os.close();
+
+            //加密?
+            EncryptionInfo info = new EncryptionInfo(EncryptionMode.standard);
+            Encryptor enc = info.getEncryptor();
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("YYYYMM");
+            String password = simpleDateFormat.format(new Date());
+            enc.confirmPassword(password);
+            OPCPackage opc = OPCPackage.open(file, PackageAccess.READ_WRITE);
+            POIFSFileSystem fs = new POIFSFileSystem();
+            OutputStream os1 = enc.getDataStream(fs);
+            opc.save(os1);
+            opc.close();
+            FileOutputStream fos = new FileOutputStream(file);
+            fs.writeFilesystem(fos);
+            fos.close();
+
+        } catch (IOException | InvalidFormatException | GeneralSecurityException e) {
+            e.printStackTrace();
+        }
+        return file;
     }
 
     public static void hanleExcel(Workbook workbook) {
